@@ -41,3 +41,35 @@ describe('parse: state lines', () => {
     expect(result.automaton.states).toEqual([])
   })
 })
+
+describe('parse: state line errors', () => {
+  it('reports a missing position after "at" instead of crashing', () => {
+    const result = parse('state 1 at')
+    expect(result.errors).toHaveLength(1)
+    expect(result.errors[0].line).toBe(1)
+    expect(result.automaton.states).toEqual([])
+  })
+
+  it('reports bad position number', () => {
+    const result = parse('state 1 at 2,abc')
+    expect(result.errors).toHaveLength(1)
+    expect(result.errors[0].line).toBe(1)
+    expect(result.automaton.states).toEqual([])
+  })
+
+  it('reports typo in a role', () => {
+    const result = parse('state 1 acept')
+    expect(result.errors).toHaveLength(1)
+    expect(result.errors[0].line).toBe(1)
+    expect(result.automaton.states).toEqual([])
+  })
+
+  it('reports two start states', () => {
+    const result = parse('state 1 start\nstate 2 start')
+    expect(result.errors).toHaveLength(1)
+    expect(result.errors[0].line).toBe(2)
+    expect(result.automaton.states).toEqual([
+      { id: '1', start: true }
+    ])
+  })
+})
