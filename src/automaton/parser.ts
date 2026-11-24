@@ -1,4 +1,4 @@
-import type { Automaton, State } from './model'
+import { EPSILON, type ArrowShape, type Automaton, type State, type Transition } from './model'
 
 export interface ParseError {
   line: number      // 1 = first line
@@ -12,6 +12,7 @@ export interface ParseResult {
 
 export function parse(source: string): ParseResult {
   const states: State[] = []
+  const transitions: Transition[] = []
   const errors: ParseError[] = []
 
   const lines = source.split('\n')
@@ -71,8 +72,46 @@ export function parse(source: string): ParseResult {
       return
     }
 
+    // A transition looks like:  from -symbol-> to  [shape words]
+    const match = line.replace(/\s*,\s*/g, ',').match(/^(\S+)\s*-(.+?)->\s*(\S+)\s*(.*)$/)
+    if (match) {
+      const [, from, rawSymbol, to, rest] = match
+      // ε can be typed as "eps"
+      const symbol = rawSymbol === 'eps' ? EPSILON : rawSymbol
+
+      if (symbol.length > 1) {
+        errors.push({ line: lineNumber, message: `"${rawSymbol}" is not one symbol. Each arrow reads exactly one symbol (or ε / eps).` })
+        return
+      }
+
+      const transition: Transition = { from, symbol, to }
+
+      if (rest !== '') {
+        const [kind, side] = rest.split(/\s+/)
+        if (kind === 'curve' && (side === 'left' || side === 'right')) {
+          transition.shape = { kind: 'curve', side }
+        } else if (kind === 'loop' && (side === 'up' || side === 'down' || side === 'left' || side === 'right')) {
+          transition.shape = { kind: 'loop', side } as ArrowShape
+        } else {
+          errors.push({ line: lineNumber, message: `Unknown arrow shape "${rest}". Use "curve left/right" or "loop up/down/left/right".` })
+          return
+        }
+      }
+
+      transitions.push(transition)
+      return
+    }
+
     errors.push({ line: lineNumber, message: `Unknown line: "${line}"` })
   })
 
-  return { automaton: { states, transitions: [] }, errors }
+  for (const t of transitions) {
+    for (const id of [t.from, t.to]) {
+      if (!states.some(s => s.id === id)) {                                                 // BLANK 4
+        states.push({ id })
+      }
+    }
+  }
+
+  return { automaton: { states, transitions }, errors }
 }
