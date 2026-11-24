@@ -31,6 +31,7 @@ export function toFlow(a: Automaton): { nodes: Node<StateNodeData>[]; edges: Edg
       alignItems: 'center',
       justifyContent: 'center',
       fontWeight: 600,
+      color: '#0f172a',
       border: s.accept ? '4px double #334155' : '2px solid #334155',
       background: s.start ? '#eef2ff' : '#ffffff',
     },
