@@ -7,7 +7,7 @@ Students write automata (and, later, their exercise answers) in a small code lan
 The goal: when a step of an exercise such as subset construction is wrong, AutoStep explains **why**
 (e.g. "you forgot the ε-closure") and gives escalating hints, instead of only saying it is wrong.
 
-**Live demo:** https://YOUR-USERNAME.github.io/autostep/
+**Live demo:** https://irfan-shafiq.github.io/autostep/
 
 ## What works now
 
