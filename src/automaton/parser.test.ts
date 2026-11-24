@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { parse } from './parser'
+import { lectureNfa, lectureNfaSource } from './examples'
 
 describe('parse: state lines', () => {
   it('reads a state with a position and start', () => {
@@ -127,5 +128,13 @@ describe('parse: transition lines', () => {
     expect(result.errors).toHaveLength(1)
     expect(result.errors[0].line).toBe(1)
     expect(result.automaton.transitions).toEqual([])
+  })
+})
+
+describe('parse: whole example', () => {
+  it('parses the lecture ε-NFA source into the same automaton as the data version', () => {
+    const result = parse(lectureNfaSource)
+    expect(result.errors).toEqual([])
+    expect(result.automaton).toEqual(lectureNfa)
   })
 })

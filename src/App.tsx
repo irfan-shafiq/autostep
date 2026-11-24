@@ -1,16 +1,19 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { epsilonClosure, formatSet } from './automaton/epsilonClosure'
-import { lectureNfa, lectureNfaSource } from './automaton/examples'
+import { lectureNfaSource } from './automaton/examples'
+import { startState } from './automaton/model'
+import { parse } from './automaton/parser'
 import { CodeEditor } from './components/CodeEditor'
 import { Diagram } from './components/Diagram'
 
 export default function App() {
   const [source, setSource] = useState(lectureNfaSource)
+  // Re-parse only when the text changes
+  const result = useMemo(() => parse(source), [source])
+  const automaton = result.automaton
 
-  // Until the parser exists (step 2), the diagram shows the hard-coded example
-  // and the editor text is not used yet.
-  const automaton = lectureNfa
-  const startClosure = formatSet(epsilonClosure(automaton, ['1']))
+  const start = startState(automaton)
+  const startClosure = start ? formatSet(epsilonClosure(automaton, [start])) : null
 
   return (
     <div className="app">
@@ -23,16 +26,22 @@ export default function App() {
         <section className="panel">
           <h2>Code</h2>
           <CodeEditor initialValue={lectureNfaSource} onChange={setSource} />
-          <p className="muted">
-            {source.split('\n').length} lines. The parser (step 2) will turn this text into the diagram.
-          </p>
+          {result.errors.length === 0 ? (
+            <p className="ok">No errors</p>
+          ) : (
+            <ul className="errors">
+              {result.errors.map((e) => (
+                <li key={e.line}>Line {e.line}: {e.message}</li>
+              ))}
+            </ul>
+          )}
         </section>
 
         <section className="panel">
           <h2>Diagram</h2>
           <Diagram automaton={automaton} />
           <p className="muted">
-            ε-closure of the start state: <code>{startClosure}</code>
+            ε-closure of the start state: <code>{startClosure ?? 'no start state'}</code>
           </p>
         </section>
       </main>
