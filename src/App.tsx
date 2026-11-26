@@ -3,12 +3,13 @@ import { epsilonClosure, formatSet } from './automaton/epsilonClosure'
 import { lectureNfaSource } from './automaton/examples'
 import { startState } from './automaton/model'
 import { parse } from './automaton/parser'
+import { ClosureExercise } from './components/ClosureExercise'
 import { CodeEditor } from './components/CodeEditor'
 import { Diagram } from './components/Diagram'
 
 export default function App() {
   const [source, setSource] = useState(lectureNfaSource)
-  // Re-parse only when the text changes
+
   const result = useMemo(() => parse(source), [source])
   const automaton = result.automaton
 
@@ -19,7 +20,7 @@ export default function App() {
     <div className="app">
       <header className="top-bar">
         <strong>AutoStep</strong>
-        <span className="muted">Starter project: model, ε-closure, editor and diagram</span>
+        <span className="muted">Write an automaton, see it drawn, practise on it</span>
       </header>
 
       <main className="workspace">
@@ -31,7 +32,9 @@ export default function App() {
           ) : (
             <ul className="errors">
               {result.errors.map((e) => (
-                <li key={e.line}>Line {e.line}: {e.message}</li>
+                <li key={e.line}>
+                  Line {e.line}: {e.message}
+                </li>
               ))}
             </ul>
           )}
@@ -43,6 +46,11 @@ export default function App() {
           <p className="muted">
             ε-closure of the start state: <code>{startClosure ?? 'no start state'}</code>
           </p>
+        </section>
+
+        <section className="panel exercise-panel">
+          <h2>Exercise: ε-closure</h2>
+          <ClosureExercise automaton={automaton} />
         </section>
       </main>
     </div>
